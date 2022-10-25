@@ -62,11 +62,22 @@ app.delete('/api/persons/:id', (request, response) => {
 
 app.post('/api/persons', (request, response) => {
     const person = request.body
-    const id = Math.floor(Math.random() * 9999)
-    person.id = id
-    console.log(`Adding person`, person)
-    persons = persons.concat(person)
-    response.json(person)
+    if (!person.name) {
+        console.log(`Name not provided with post`);
+        response.status(400).json({'error': 'Please provide name'})
+    } else if (!person.number) {
+        console.log(`Number not provided with post`);
+        response.status(400).json({'error': 'Please provide number'})
+    } else if (persons.find(p => p.number === person.number)) {
+        console.log(`Duplicate Number`)
+        response.status(400).json({'error': 'Provided number already exists'})
+    } else {
+        const id = Math.floor(Math.random() * 9999)
+        person.id = id
+        console.log(`Adding person`, person)
+        persons = persons.concat(person)
+        response.json(person)
+    }
 })
 
 const PORT = 3001
