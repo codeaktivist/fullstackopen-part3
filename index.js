@@ -2,7 +2,18 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 app.use(express.json())
-app.use(morgan('tiny'))
+app.use(morgan((tokens, request, response) => {
+    return [
+        'CUSTOM',
+        tokens.method(request, response),
+        tokens.url(request, response),
+        tokens.status(request, response),
+        tokens.res(request, response, 'content-length'), '-',
+        tokens['response-time'](request, response), 'ms',
+        JSON.stringify(request.body)
+    ].join(' ')
+}))
+
 
 let persons = [
     { 
@@ -75,10 +86,9 @@ app.post('/api/persons', (request, response) => {
         response.status(400).json({'error': 'Provided number already exists'})
     } else {
         const id = Math.floor(Math.random() * 9999)
-        person.id = id
         console.log(`Adding person`, person)
-        persons = persons.concat(person)
-        response.json(person)
+        persons = persons.concat({id: id, ...person})
+        response.json(persons.find(p => p.id === Number(id)))
     }
 })
 
