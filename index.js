@@ -40,7 +40,7 @@ app.get('/api/persons/:id', (request, response, next) => {
                 response.json(result)
             } else {
                 console.log('Person does not exist')
-                response.status(404).end()
+                response.status(404).json({ error: 'person does not exist'})
             }
         })
         .catch(err => next(err))
@@ -80,6 +80,24 @@ app.post('/api/persons', (request, response) => {
             })
     }
 })
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).json({error: 'endpoint not found'})
+}
+
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+    if (error.name === 'CastError') {
+        console.log('Cast error: ', error)
+        response.status(400).send({ error: 'malformatted id' })
+    } else {
+        next(error)
+        console.log('Other error: ', error);
+    }
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
