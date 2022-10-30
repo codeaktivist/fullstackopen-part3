@@ -86,14 +86,22 @@ app.post('/api/persons', (request, response) => {
     } else if (!person.number) {
         console.log(`Number not provided with post`);
         response.status(400).json({'error': 'Please provide number'})
-    } else if (persons.find(p => p.number === person.number)) {
-        console.log(`Duplicate Number`)
-        response.status(400).json({'error': 'Provided number already exists'})
+    // } else if (persons.find(p => p.number === person.number)) {
+    //     console.log(`Duplicate Number`)
+    //     response.status(400).json({'error': 'Provided number already exists'})
     } else {
-        const id = Math.floor(Math.random() * 9999)
-        console.log(`Adding person`, person)
-        persons = persons.concat({id: id, ...person})
-        response.json(persons.find(p => p.id === Number(id)))
+        // const id = Math.floor(Math.random() * 9999)
+        const newPerson = new Person({
+            name: person.name,
+            number: person.number
+        })
+        newPerson.save()
+            .then(result => {
+                console.log(`Person added: `, result)
+                response.json(newPerson)
+                persons = persons.concat({newPerson})
+            })
+        // response.json(persons.find(p => p.id === Number(id)))
     }
 })
 
