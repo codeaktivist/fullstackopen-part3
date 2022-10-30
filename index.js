@@ -54,7 +54,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
                 response.json(result)
             } else {
                 console.log('Person for removal not found')
-                response.json({ error: 'person for deletion not found'})
+                response.status(404).json({ error: 'person for deletion not found'})
             }
         })
         .catch(err => next(err))
