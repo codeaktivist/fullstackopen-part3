@@ -81,6 +81,23 @@ app.post('/api/persons', (request, response) => {
     }
 })
 
+app.put('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndUpdate(request.params.id, {
+        name: request.body.name,
+        number: request.body.number
+    }, { new: true})
+        .then(result => {
+            if (result) {
+                console.log('Person updated to ', result)
+                response.status(202).json(result)
+            } else {
+                console.log('Person for update not found')
+                response.status(404).json({ error: 'Person for update not found'})
+            }
+        })
+        .catch(err => next(err))
+})
+
 const unknownEndpoint = (request, response) => {
     response.status(404).json({error: 'endpoint not found'})
 }
