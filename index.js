@@ -17,65 +17,47 @@ app.use(morgan((tokens, request, response) => {
     ].join(' ')
 }))
 
-let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
-
 app.get('/api/persons', (request, response) => {
     Person.find({}).then(result => {
         response.json(result)
     })
-    // response.json(persons)
 })
 
 app.get('/api/info', (request, response) => {
-    const count = persons.length
-    response.send(
-        `Phonebook has ${count} entries<br>${new Date}`
-    )
+    Person.find({})
+        .then(result => {
+            response.send(
+                `Phonebook has ${result.length} entries<br>${new Date}`
+            )
+        })
 })
 
-app.get('/api/persons/:id', (request, response) => { 
-    console.log(request.params.id);
-    const person = persons.find(person => person.id === Number(request.params.id))
-    if (person) {
-        console.log(`looking for ${person.name}`)
-        response.json(person)
-    } else {
-        console.log(`Person not found`);
-        response.status(404).end()
-    }
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then(result => {
+            if (result) {
+                console.log('Showing info for ', result.name)
+                response.json(result)
+            } else {
+                console.log('Person does not exist')
+                response.status(404).end()
+            }
+        })
+        .catch(err => next(err))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
-    const person = persons.find(person => person.id === Number(request.params.id))
-    if (person) {
-        console.log(`Deleting Id ${request.params.id}`)
-        response.json(person)
-        persons = persons.filter(person => person.id !== Number(request.params.id))
-    } else {
-        console.log(`Person for deletion not found`)
-        response.status(404).end()
-    }
+app.delete('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndRemove(request.params.id)
+        .then(result => {
+            if (result) {
+                console.log('Removed: ', result)
+                response.json(result)
+            } else {
+                console.log('Person for removal not found')
+                response.json({ error: 'person for deletion not found'})
+            }
+        })
+        .catch(err => next(err))
 })
 
 app.post('/api/persons', (request, response) => {
@@ -86,11 +68,7 @@ app.post('/api/persons', (request, response) => {
     } else if (!person.number) {
         console.log(`Number not provided with post`);
         response.status(400).json({'error': 'Please provide number'})
-    // } else if (persons.find(p => p.number === person.number)) {
-    //     console.log(`Duplicate Number`)
-    //     response.status(400).json({'error': 'Provided number already exists'})
     } else {
-        // const id = Math.floor(Math.random() * 9999)
         const newPerson = new Person({
             name: person.name,
             number: person.number
@@ -99,9 +77,7 @@ app.post('/api/persons', (request, response) => {
             .then(result => {
                 console.log(`Person added: `, result)
                 response.json(newPerson)
-                persons = persons.concat({newPerson})
             })
-        // response.json(persons.find(p => p.id === Number(id)))
     }
 })
 
