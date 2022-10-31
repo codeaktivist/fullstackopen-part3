@@ -60,7 +60,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
         .catch(err => next(err))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const person = request.body
     if (!person.name) {
         console.log(`Name not provided with post`);
@@ -78,6 +78,7 @@ app.post('/api/persons', (request, response) => {
                 console.log(`Person added: `, result)
                 response.json(newPerson)
             })
+            .catch(err => next(err))
     }
 })
 
@@ -85,7 +86,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndUpdate(request.params.id, {
         name: request.body.name,
         number: request.body.number
-    }, { new: true})
+    }, { new: true, runValidators: true })
         .then(result => {
             if (result) {
                 console.log('Person updated to ', result)
@@ -106,13 +107,18 @@ app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
     if (error.name === 'CastError') {
-        console.log('Cast error: ', error)
-        response.status(400).send({ error: 'malformatted id' })
-    } else {
-        next(error)
-        console.log('Other error: ', error);
+        console.log('Cast error: ', error.message)
+        return response.status(400).json({ error: 'malformatted id' })
     }
-}
+
+    if (error.name === 'ValidationError') {
+        console.log('Validation error: ', error)
+        return response.status(400).json({ error: error.message })
+    }
+
+    next(error)
+    console.log('Other error: ', error.message)
+    }
 
 app.use(errorHandler)
 
