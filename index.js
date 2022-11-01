@@ -1,7 +1,6 @@
 require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
-const person = require('./models/person')
 const Person = require('./models/person')
 
 const app = express()
@@ -62,13 +61,13 @@ app.delete('/api/persons/:id', (request, response, next) => {
 app.post('/api/persons', (request, response, next) => {
     const person = request.body
     if (!person.name) {
-        console.log(`Name not provided with post`);
+        console.log('Name not provided with post')
         response.status(400).json({error: 'Please provide name'})
         return
     }
 
     if (!person.number) {
-        console.log(`Number not provided with post`);
+        console.log('Number not provided with post')
         response.status(400).json({error: 'Please provide number'})
         return
     }
@@ -91,13 +90,13 @@ app.post('/api/persons', (request, response, next) => {
      
     newPerson.save()
         .then(result => {
-            console.log(`Person added: `, result)
+            console.log('Person added: ', result)
             response.json(newPerson)
         })
         .catch(err => next(err))
 })
 
-app.put('/api/persons/:id', (request, response, next) => {
+app.put('/api/persons/:id', (request, response) => {
     const person = request.body
     Person.findByIdAndUpdate(
         request.params.id,
@@ -120,7 +119,7 @@ app.put('/api/persons/:id', (request, response, next) => {
             }
         })
         .catch(error => {
-            console.log('Error trying to update: ', error);
+            console.log('Error trying to update: ', error)
             response.status(400).json({error: error.message})
         })
 })
@@ -144,11 +143,11 @@ const errorHandler = (error, request, response, next) => {
 
     next(error)
     console.log('Other error: ', error)
-    }
+}
 
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`)
 })

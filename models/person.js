@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const url = process.env.MONGODB_URI
 
 mongoose.connect(url)
-    .then(result => {
+    .then(() => {
         console.log('Connected to MongoDB')
     })
     .catch(err => {
@@ -21,10 +21,10 @@ const personSchema = new mongoose.Schema({
         minLength: [8, 'Phone number must be 8 digits or more'],
         validate: {
             validator: (v) => {
-              return /\d{2,3}-\d{6,}/.test(v);
+                return /\d{2,3}-\d{6,}/.test(v)
             },
             message: props => `${props.value} is not a valid phone number!`
-          },
+        },
         required: true
     }
 })
